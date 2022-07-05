@@ -48,7 +48,7 @@ jobs:
           yarn run build
 
       - name: tar file
-        run: tar -r hous.tar ./dist ./scripts/after-deploy.sh ./appspec.yml ./.env
+        run: tar cvf hous.tar ./dist ./scripts/after-deploy.sh ./appspec.yml ./.env
 
         # run: zip -r hous.zip ./
 

@@ -7,6 +7,8 @@ cd $REPOSITORY
 
 pwd
 
+ls
+
 # npm install
 
 # npm install -g pm2

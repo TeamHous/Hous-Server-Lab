@@ -49,11 +49,11 @@ jobs:
 
       - name: zip file
         run: |
-          mkdir build
-          mv ./dist build
-          mv ./scripts/after-deploy.sh build
-          mv ./appspec.yml build
-          mv ./.env build/dist
+          mkdir tmp
+          mv ./dist tmp
+          mv ./scripts/after-deploy.sh tmp
+          mv ./appspec.yml tmp
+          mv ./.env tmp/dist
         # zip -r hous.zip ./dist ./scripts/after-deploy.sh ./appspec.yml ./.env
 
         # run: zip -r hous.zip ./
@@ -66,7 +66,7 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: upload to S3
-        run: aws s3 cp --region ap-northeast-2 ./build s3://hous-build/deploy/
+        run: aws s3 cp --region ap-northeast-2 ./tmp s3://hous-build/deploy/
 
       - name: deploy with AWS codeDeploy
         run: aws deploy create-deployment

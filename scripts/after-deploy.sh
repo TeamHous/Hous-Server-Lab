@@ -3,6 +3,8 @@ REPOSITORY=/home/ubuntu/build
 
 cd $REPOSITORY
 
-# yarn
+npm install
 
-node dist
+npm install -g pm2
+
+pm2 start dist

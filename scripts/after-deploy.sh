@@ -1,10 +1,14 @@
 #!/bin/bash
 REPOSITORY=/home/ubuntu/build
 
+pwd
+
 cd $REPOSITORY
 
-npm install
+pwd
 
-npm install -g pm2
+# npm install
 
-pm2 start dist
+# npm install -g pm2
+
+# pm2 start dist

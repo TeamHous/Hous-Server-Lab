@@ -41,9 +41,9 @@ jobs:
           echo JWT_ALGO=${{ secrets.JWT_ALGO }} >> .env
 
       - name: build client files
-        working-directory: ./client
+        # working-directory: ./
         run: |
-          yarn install --frozen-lockfile
+          yarn
           yarn run build
 
       - name: zip file

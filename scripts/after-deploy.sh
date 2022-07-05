@@ -5,4 +5,6 @@ cd $REPOSITORY
 
 yarn
 
-node dist
+pwd
+
+pm2 start dist

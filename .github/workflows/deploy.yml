@@ -31,7 +31,7 @@ jobs:
         run: npm -v
 
       - name: create env file
-        # working-directory: ./server
+        working-directory: ./
         run: |
           pwd
           touch .env
@@ -40,8 +40,8 @@ jobs:
           echo JWT_SECRET=${{ secrets.JWT_SECRET }} >> .env
           echo JWT_ALGO=${{ secrets.JWT_ALGO }} >> .env
 
-      - name: build client files
-        # working-directory: ./
+      - name: build server files
+        working-directory: ./
         run: |
           yarn
           yarn run build

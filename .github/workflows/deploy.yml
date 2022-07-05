@@ -50,8 +50,6 @@ jobs:
       - name: zip file
         run: zip -r hous.zip ./dist ./scripts/after-deploy.sh ./appspec.yml ./.env ./package.json
 
-        # run: zip -r hous.zip ./
-
       - name: AWS configure credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:

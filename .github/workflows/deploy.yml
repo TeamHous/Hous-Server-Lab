@@ -47,8 +47,8 @@ jobs:
           yarn
           yarn run build
 
-      - name: zip file
-        run: zip -r hous.zip ./dist ./scripts/after-deploy.sh ./appspec.yml ./.env
+      - name: tar file
+        run: tar -r hous.tar ./dist ./scripts/after-deploy.sh ./appspec.yml ./.env
 
         # run: zip -r hous.zip ./
 
@@ -60,11 +60,11 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: upload to S3
-        run: aws s3 cp --region ap-northeast-2 ./tmp s3://hous-build/deploy/
+        run: aws s3 cp --region ap-northeast-2 ./hous.tar s3://hous-build/deploy/
 
       - name: deploy with AWS codeDeploy
         run: aws deploy create-deployment
           --application-name hous-codedeploy
           --deployment-config-name CodeDeployDefault.OneAtATime
           --deployment-group-name GROUP
-          --s3-location bucket=hous-build,bundleType=zip,key=deploy/hous.zip
+          --s3-location bucket=hous-build,bundleType=tar,key=deploy/hous.tar

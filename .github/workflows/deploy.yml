@@ -48,9 +48,7 @@ jobs:
           yarn run build
 
       - name: zip file
-        run: |
-          mv ./.env ./dist 
-          zip -r hous.zip ./dist ./scripts/after-deploy.sh ./appspec.yml
+        run: zip -r hous.zip ./dist ./scripts/after-deploy.sh ./appspec.yml
 
         # run: zip -r hous.zip ./
 

@@ -38,17 +38,23 @@ jobs:
           echo PORT=${{ secrets.PORT }} >> .env
           echo MONGODB_URI=${{ secrets.MONGODB_URI }} >> .env
           echo JWT_SECRET=${{ secrets.JWT_SECRET }} >> .env
-          echo JWT_ALGO='${{ secrets.JWT_ALGO }}' >> .env
+          echo JWT_ALGO=${{ secrets.JWT_ALGO }} >> .env
           cat .env
 
       - name: build server files
         working-directory: ./
         run: |
-          npm install
-          npm run build
+          yarn
+          yarn run build
 
       - name: zip file
-        run: zip -r hous.zip ./dist ./scripts/after-deploy.sh ./appspec.yml ./.env
+        run: |
+          mkdir build
+          mv ./dist build
+          mv ./scripts/after-deploy.sh build
+          mv ./appspec.yml build
+          mv ./.env build/dist
+        # zip -r hous.zip ./dist ./scripts/after-deploy.sh ./appspec.yml ./.env
 
         # run: zip -r hous.zip ./
 
@@ -60,7 +66,7 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: upload to S3
-        run: aws s3 cp --region ap-northeast-2 ./hous.zip s3://hous-build/deploy/
+        run: aws s3 cp --region ap-northeast-2 ./build s3://hous-build/deploy/
 
       - name: deploy with AWS codeDeploy
         run: aws deploy create-deployment

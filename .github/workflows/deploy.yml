@@ -38,18 +38,21 @@ jobs:
           echo PORT=${{ secrets.PORT }} >> .env
           echo MONGODB_URI=${{ secrets.MONGODB_URI }} >> .env
           echo JWT_SECRET=${{ secrets.JWT_SECRET }} >> .env
-          echo JWT_ALGO=${{ secrets.JWT_ALGO }} >> .env
+          echo JWT_ALGO='${{ secrets.JWT_ALGO }}' >> .env
           cat .env
 
-      # - name: build server files
-      #   working-directory: ./
-      #   run: |
-      #     yarn
-      #     yarn run build
+      - name: build server files
+        working-directory: ./
+        run: |
+          yarn install
+          yarn run build
 
       - name: zip file
-        # run: zip -r hous.zip ./dist ./scripts/after-deploy.sh ./appspec.yml ./.env
-        run: zip -r hous.zip ./
+        run: |
+          mv ./.env ./dist 
+          zip -r hous.zip ./dist ./scripts/after-deploy.sh ./appspec.yml
+
+        # run: zip -r hous.zip ./
 
       - name: AWS configure credentials
         uses: aws-actions/configure-aws-credentials@v1

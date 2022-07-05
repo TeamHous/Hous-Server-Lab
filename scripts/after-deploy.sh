@@ -11,4 +11,4 @@ pwd
 
 # npm install -g pm2
 
-# pm2 start dist
+pm2 start dist

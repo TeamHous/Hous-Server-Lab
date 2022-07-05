@@ -1,5 +1,8 @@
 #!/bin/bash
-# REPOSITORY=/home/ubuntu/build
+REPOSITORY=/home/ubuntu/build
 
-# cd $REPOSITORY
-pm2 restart 0
+cd $REPOSITORY
+cd dist
+yarn
+cd $REPOSITORY
+pm2 start dist

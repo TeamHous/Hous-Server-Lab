@@ -9,8 +9,6 @@ pwd
 
 ls
 
-npm install
+sudo /usr/bin/yarn
 
-# npm install -g pm2
-
-pm2 start dist
+sudo /usr/bin/pm2 start dist

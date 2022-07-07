@@ -5,4 +5,4 @@ cd $REPOSITORY
 
 sudo /usr/bin/yarn
 
-#sudo /usr/bin/pm2 restart 0
+sudo /usr/bin/pm2 start 0

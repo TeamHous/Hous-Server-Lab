@@ -51,6 +51,7 @@ jobs:
         run: zip -r hous.zip ./dist ./scripts ./appspec.yml ./.env ./package.json
 
       - name: AWS configure credentials
+        if: ${{ github.base_ref == 'main' }}
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -58,11 +59,11 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: upload to S3
-        run: aws s3 cp --region ap-northeast-2 ./hous.zip s3://hous-build/deploy/
+        if: ${{ github.base_ref == 'main' }}
+        run: |
+          echo "upload to S3~"
 
       - name: deploy with AWS codeDeploy
-        run: aws deploy create-deployment
-          --application-name hous-codedeploy
-          --deployment-config-name CodeDeployDefault.OneAtATime
-          --deployment-group-name GROUP
-          --s3-location bucket=hous-build,bundleType=zip,key=deploy/hous.zip
+        if: ${{ github.base_ref == 'main' }}
+        run: |
+          echo "deploy with AWS codeDeploy~"

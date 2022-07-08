@@ -1,9 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import config from '../config';
+import { logger } from '../config/logger';
+import errorGenerator from '../errors/errorGenerator';
 import message from '../modules/responseMessage';
 import statusCode from '../modules/statusCode';
-import util from '../modules/util';
 
 export default (req: Request, res: Response, next: NextFunction) => {
   // request-header 에서 토큰 받아오기
@@ -11,7 +12,10 @@ export default (req: Request, res: Response, next: NextFunction) => {
 
   // 토큰 유뮤 검증
   if (!token) {
-    return res.status(statusCode.UNAUTHORIZED).send(util.fail(statusCode.UNAUTHORIZED, message.NULL_VALUE_TOKEN));
+    throw errorGenerator({
+      msg: message.NULL_VALUE_TOKEN,
+      statusCode: statusCode.UNAUTHORIZED
+    });
   }
 
   // 토큰 검증
@@ -22,10 +26,13 @@ export default (req: Request, res: Response, next: NextFunction) => {
 
     next();
   } catch (error: any) {
-    console.log(error);
+    logger.error(error);
     if (error.name === 'TokenExpiredError') {
-      return res.status(statusCode.UNAUTHORIZED).send(util.fail(statusCode.UNAUTHORIZED, message.INVALID_TOKEN));
+      throw errorGenerator({
+        msg: message.INVALID_TOKEN,
+        statusCode: statusCode.UNAUTHORIZED
+      });
     }
-    res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    throw errorGenerator({ statusCode: statusCode.INTERNAL_SERVER_ERROR });
   }
 };

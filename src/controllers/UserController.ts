@@ -1,79 +1,66 @@
-import { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
-import { PostBaseResponseDto } from '../interfaces/common/PostBaseResponseDto';
-import { UserCreateDto } from '../interfaces/user/UserCreateDto';
-import { UserSignInDto } from '../interfaces/user/UserSignInDto';
-import getToken from '../modules/jwtHandler';
+import { NextFunction, Request, Response } from 'express';
+import { Result, ValidationError, validationResult } from 'express-validator';
+import { UserResponseDto } from '../interfaces/user/UserResponseDto';
+import { UserUpdateDto } from '../interfaces/user/UserUpdateDto';
 import message from '../modules/responseMessage';
 import statusCode from '../modules/statusCode';
 import util from '../modules/util';
 import { UserService } from '../services';
 
 /**
- *  @route POST /user
- *  @desc Create User
- *  @access Public
+ * @route GET /user/profile/me
+ * @desc select user information
+ * @access Private
  */
-const createUser = async (req: Request, res: Response) => {
-  const error = validationResult(req);
-  if (!error.isEmpty()) {
-    return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BAD_REQUEST));
-  }
-  const userCreateDto: UserCreateDto = req.body; // User Create Dto 로 req.body 받아옴
+const getUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void | Response> => {
+  const userId: string = req.body.user._id;
 
   try {
-    const result = await UserService.createUser(userCreateDto);
-    if (!result) return res.status(statusCode.CONFLICT).send(util.fail(statusCode.CONFLICT, message.DUPLICATED));
+    const result: UserResponseDto = await UserService.getUser(userId);
 
-    const accessToken = getToken(result._id);
-
-    const data = {
-      _id: result._id,
-      accessToken
-    };
-
-    res.status(statusCode.CREATED).send(util.success(statusCode.CREATED, message.CREATE_USER_SUCCESS, data));
+    return res
+      .status(statusCode.OK)
+      .send(util.success(statusCode.OK, message.READ_USER_SUCCESS, result));
   } catch (error) {
-    console.log(error);
-    // 서버 내부에서 오류 발생
-    res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    next(error);
   }
 };
-
 /**
- * @route POST /user/signin
- * @desc sign in User
- * @access Public
+ * @route POST /user/profile/me
+ * @desc update user information
+ * @access Private
  */
-const signInUser = async (req: Request, res: Response) => {
-  const error = validationResult(req);
-  if (!error.isEmpty()) {
-    return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BAD_REQUEST));
+const updateUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void | Response> => {
+  const errors: Result<ValidationError> = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res
+      .status(statusCode.BAD_REQUEST)
+      .send(
+        util.fail(statusCode.BAD_REQUEST, message.BAD_REQUEST, errors.array())
+      );
   }
 
-  const userSignInDto: UserSignInDto = req.body;
+  const userUpdateDto: UserUpdateDto = req.body;
+  const userId: string = req.body.user._id;
 
   try {
-    const result = await UserService.signInUser(userSignInDto);
+    await UserService.updateUser(userId, userUpdateDto);
 
-    if (!result) return res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NOT_FOUND));
-    else if (result === 401) return res.status(statusCode.UNAUTHORIZED).send(util.fail(statusCode.UNAUTHORIZED, message.INVALID_PASSWORD));
-
-    const accessToken = getToken((result as PostBaseResponseDto)._id);
-
-    const data = {
-      _id: (result as PostBaseResponseDto)._id,
-      accessToken
-    };
-
-    res.status(statusCode.OK).send(util.success(statusCode.OK, message.SIGNIN_USER_SUCCESS, data));
-  } catch (e) {
-    console.log(e);
-    res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    return res.status(statusCode.NO_CONTENT).send();
+  } catch (error) {
+    next(error);
   }
 };
 
 export default {
-  createUser,
-  signInUser
+  getUser,
+  updateUser
 };

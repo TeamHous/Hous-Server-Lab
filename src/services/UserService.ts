@@ -1,27 +1,39 @@
 import bcrypt from 'bcryptjs';
+import errorGenerator from '../errors/errorGenerator';
+import { SignupDto } from '../interfaces/auth/SignupDto';
 import { PostBaseResponseDto } from '../interfaces/common/PostBaseResponseDto';
-import { UserCreateDto } from '../interfaces/user/UserCreateDto';
-import { UserSignInDto } from '../interfaces/user/UserSignInDto';
+import { UserResponseDto } from '../interfaces/user/UserResponseDto';
+import { UserUpdateDto } from '../interfaces/user/UserUpdateDto';
 import User from '../models/User';
+import message from '../modules/responseMessage';
+import statusCode from '../modules/statusCode';
+import UserServiceUtils from './UserServiceUtils';
 
-const createUser = async (userCreateDto: UserCreateDto): Promise<PostBaseResponseDto | null> => {
+const createUser = async (
+  signupDto: SignupDto
+): Promise<PostBaseResponseDto> => {
   try {
     const existUser = await User.findOne({
-      email: userCreateDto.email
+      email: signupDto.email
     });
-    if (existUser) return null;
-  } catch (error) {
-    console.log(error);
-    throw error;
-  }
-  try {
+    if (existUser)
+      throw errorGenerator({
+        msg: message.CONFLICT_EMAIL,
+        statusCode: statusCode.CONFLICT
+      });
+
     const user = new User({
-      email: userCreateDto.email,
-      password: userCreateDto.password
+      email: signupDto.email,
+      password: signupDto.password,
+      userName: signupDto.userName,
+      gender: signupDto.gender,
+      birthday: signupDto.birthday,
+      fcmToken: signupDto.fcmToken,
+      notificationState: true
     });
 
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(userCreateDto.password, salt);
+    const salt: string = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(signupDto.password, salt);
 
     await user.save();
 
@@ -31,33 +43,57 @@ const createUser = async (userCreateDto: UserCreateDto): Promise<PostBaseRespons
 
     return data;
   } catch (error) {
-    console.log(error);
     throw error;
   }
 };
 
-const signInUser = async (userSignInDto: UserSignInDto): Promise<PostBaseResponseDto | null | number> => {
+const getUser = async (userId: string): Promise<UserResponseDto> => {
   try {
-    const user = await User.findOne({
-      email: userSignInDto.email
-    });
-    if (!user) return null;
+    await UserServiceUtils.findUserById(userId);
 
-    const isMatch = await bcrypt.compare(userSignInDto.password, user.password);
-    if (!isMatch) return 401;
+    const userInfo = await User.findById(userId).populate(
+      'typeId',
+      'typeName typeColor'
+    );
 
-    const data = {
-      _id: user._id
+    if (!userInfo)
+      throw errorGenerator({
+        msg: message.NOT_FOUND_USER,
+        statusCode: statusCode.NOT_FOUND
+      });
+
+    const data: UserResponseDto = {
+      userName: userInfo.userName,
+      job: userInfo.job,
+      introduction: userInfo.introduction,
+      hashTag: userInfo.hashTag,
+      typeName: (userInfo.typeId as any).typeName,
+      typeColor: (userInfo.typeId as any).typeColor,
+      typeScore: userInfo.typeScore,
+      notificationState: userInfo.notificationState
     };
 
     return data;
   } catch (error) {
-    console.log(error);
+    throw error;
+  }
+};
+
+const updateUser = async (
+  userId: string,
+  userUpdateDto: UserUpdateDto
+): Promise<void> => {
+  try {
+    await UserServiceUtils.findUserById(userId);
+
+    await User.findByIdAndUpdate(userId, userUpdateDto);
+  } catch (error) {
     throw error;
   }
 };
 
 export default {
   createUser,
-  signInUser
+  updateUser,
+  getUser
 };

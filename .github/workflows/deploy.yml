@@ -48,6 +48,7 @@ jobs:
           yarn run build
 
       - name: zip file
+        if: ${{ github.base_ref == 'main' }}
         run: zip -r hous.zip ./dist ./scripts ./appspec.yml ./.env ./package.json
 
       - name: AWS configure credentials
